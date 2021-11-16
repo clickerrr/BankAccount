@@ -6,21 +6,25 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 public class ConnectionManager
 {
-
+	// salt for the password
 	private byte[] passSalt;
+	// MySQL connection
 	private Connection connect;
 	
+	// constructor that initializes the connection and creates it
 	public ConnectionManager() throws SQLException
 	{
+		// connection established to local mySQL server on port 3306 with username: root and password: password
 		connect = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "password");
-		System.out.println("Successfully Connected");
-		
+		System.out.println("Successfully Connected");	
 	}
 	
+	//
 	public void transferAmount(String username, double amount) throws SQLException
 	{
 		withdrawAmount(amount, username);
@@ -53,6 +57,32 @@ public class ConnectionManager
 		
 	}
 	
+	public void updateSavingsBalance(String username, double newBalance) throws SQLException
+	{
+		String query = "update accounts.account_information set savingBalance=? where username=?";
+		
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setDouble(1, newBalance);
+		preparedStatement.setString(2, username);
+		
+		preparedStatement.execute();
+
+	}
+	
+	public void updateSavingsTimeIndexed(String username) throws SQLException
+	{
+		String query = "update accounts.account_information set timeCreated=? where username=?";
+		
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		long now = System.currentTimeMillis();
+		Timestamp ts = new Timestamp(now);
+		preparedStatement.setTimestamp(1, ts);
+		preparedStatement.setString(2, username);
+		
+		preparedStatement.execute();
+	}
+	
 	public ArrayList<String> getSavingData(String username) throws SQLException
 	{
 		ArrayList<String> returnList = new ArrayList<String>();
@@ -81,14 +111,35 @@ public class ConnectionManager
 			withdrawAmount(amount, username);
 		}
 		
-		String query = "update accounts.account_information set savings=1, savingPlan=?, savingBalance=? where username=?";
+		String query = "update accounts.account_information set savings=1, savingPlan=?, savingBalance=?, timeCreated=? where username=?";
 		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		long now = System.currentTimeMillis();
+		Timestamp ts = new Timestamp(now);
 		
 		preparedStatement.setString(1, savingPlan);
 		preparedStatement.setDouble(2, amount);
-		preparedStatement.setString(3, username);
+		preparedStatement.setTimestamp(3, ts);
+		preparedStatement.setString(4, username);
 		
 		preparedStatement.execute();
+		
+	}
+	
+	public Timestamp getSavingsCreationTime(String username) throws SQLException
+	{
+		Timestamp ts = null;
+		String query = "select timeCreated from accounts.account_information where username=?";
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setString(1, username);
+		ResultSet rs = preparedStatement.executeQuery();
+		
+		while(rs.next())
+		{
+			ts = rs.getTimestamp("timeCreated");
+		}
+		
+		return ts;
 		
 	}
 	
@@ -341,7 +392,5 @@ public class ConnectionManager
 	{
 		connect.close();
 	}
-
-	
 	
 }
