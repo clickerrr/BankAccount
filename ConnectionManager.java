@@ -24,7 +24,6 @@ public class ConnectionManager
 		System.out.println("Successfully Connected");	
 	}
 	
-	//
 	public void transferAmount(String username, double amount) throws SQLException
 	{
 		withdrawAmount(amount, username);
@@ -68,6 +67,65 @@ public class ConnectionManager
 		
 		preparedStatement.execute();
 
+	}
+	
+	public void adminUpdateBalance(String username, double newBalance) throws SQLException
+	{
+		String query = "select balance from accounts.account_information where username=?";
+				
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setString(1, username);
+		ResultSet rs = preparedStatement.executeQuery();
+		
+		double oldBalance = 0;
+		
+		while(rs.next())
+		{
+			oldBalance = rs.getDouble("balance");
+		}
+		
+		newBalance += oldBalance;
+		
+		
+		query = "update accounts.account_information set balance=? where username=?";
+		
+		preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setDouble(1, newBalance);
+		preparedStatement.setString(2, username);
+		
+		preparedStatement.execute();
+
+	}
+	
+	public void adminUpdateSavingsBalance(String username, double newBalance) throws SQLException
+	{
+		String query = "select savingBalance from accounts.account_information where username=?";
+		
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setString(1, username);
+		ResultSet rs = preparedStatement.executeQuery();
+		
+		double oldBalance = 0;
+		
+		while(rs.next())
+		{
+			oldBalance = rs.getDouble("savingBalance");
+		}
+		
+		newBalance += oldBalance;
+		
+		
+		query = "update accounts.account_information set savingBalance=? where username=?";
+		
+		preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setDouble(1, newBalance);
+		preparedStatement.setString(2, username);
+		
+		preparedStatement.execute();
 	}
 	
 	public void updateSavingsTimeIndexed(String username) throws SQLException
@@ -357,6 +415,7 @@ public class ConnectionManager
 		while(rs.next())
 		{
 			returnList.add(rs.getString("balance"));
+			returnList.add(rs.getString("savingBalance"));
 			returnList.add(rs.getString("firstName") + " " + rs.getString("lastName"));
 			returnList.add(rs.getString("username"));
 			returnList.add(rs.getString("email"));
@@ -387,6 +446,40 @@ public class ConnectionManager
 
 		return returnValue;
 	}
+	
+	public ArrayList<User> adminGetAllUserData() throws SQLException
+	{
+		ArrayList<User> returnData = new ArrayList<User>();
+		
+		String query = "select * from accounts.account_information order by email";
+		
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		ResultSet rs = preparedStatement.executeQuery();
+		
+		while(rs.next())
+		{
+			returnData.add(new User(rs.getString("firstName"), rs.getString("lastName"), rs.getString("username"), rs.getString("email"), rs.getString("balance"), rs.getString("savingPlan"), rs.getString("savingBalance")));
+		}
+		
+		return returnData;
+		
+		
+		
+	}
+	
+	public void adminDeleteUser(String username) throws SQLException
+	{
+		String query = "delete from accounts.account_information where username=?";
+		
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setString(1, username);
+		
+		preparedStatement.execute();
+		
+	}
+	
 	
 	public void close() throws SQLException
 	{

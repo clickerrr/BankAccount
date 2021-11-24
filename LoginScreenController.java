@@ -88,26 +88,44 @@ public class LoginScreenController
 					throw new Exception();
 				}
 				
-				String username = connection.getUser(usernameField.getText(), passwordField.getText());
-				if (username == null)
+				if(usernameField.getText().equals("admin") && passwordField.getText().equals("password"))
 				{
-					errorLabel.setTextFill(Color.RED);
-					errorLabel.setText("Incorrect Username or Password");
-					throw new SQLException();
+					try
+					{
+						FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/AdminScreen.fxml"));
+						Stage adminStage = loader.load();
+						adminStage.show();
+						primaryStage.close();
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					String username = connection.getUser(usernameField.getText(), passwordField.getText());
+					if (username == null)
+					{
+						errorLabel.setTextFill(Color.RED);
+						errorLabel.setText("Incorrect Username or Password");
+						throw new SQLException();
+					}
+					
+					errorLabel.setTextFill(Color.GREEN);
+					errorLabel.setText("Logged In");
+					primaryStage.close();
+					try {
+						FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/AccountScreen.fxml"));
+						Stage accountStage = loader.load();
+						AccountScreenController accController = loader.getController();
+						accController.initData(username);
+						accountStage.show();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 				
-				errorLabel.setTextFill(Color.GREEN);
-				errorLabel.setText("Logged In");
-				primaryStage.close();
-				try {
-					FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/AccountScreen.fxml"));
-					Stage accountStage = loader.load();
-					AccountScreenController accController = loader.getController();
-					accController.initData(username);
-					accountStage.show();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 				connection.close();
 			} catch (SQLException e) {
 				loginButton.setDisable(false);

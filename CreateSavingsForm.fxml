@@ -59,7 +59,7 @@
       </HBox>
       <HBox fx:id="errorHbox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
          <children>
-            <Label fx:id="errorText" text="errorText" textFill="RED" />
+            <Label fx:id="errorText" contentDisplay="CENTER" text="errorText" textFill="RED" />
          </children>
       </HBox>
    </children>

@@ -1,5 +1,12 @@
 package bankAccountStorage;
 
+/*
+ * Name: AccountScreenController.java
+ * Author: Bartosz Swiech
+ * Version: 1.0
+ * Description: This class is an FXML controller for the main account screen
+ */
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -18,7 +25,7 @@ import javafx.stage.Stage;
 
 public class AccountScreenController 
 {
-	
+	// FXML References for the controller
 	@FXML
 	private Stage primaryStage;
 	@FXML
@@ -52,15 +59,18 @@ public class AccountScreenController
 	@FXML
 	private TabPane accountTabPane;
 	
-	
+	// username String for the database references
 	private String username;
 	
+	// connection manager for any database functions
 	private ConnectionManager cm;
+	// balance of the user
 	private double balance;
 	
-	
+	// format for currency
 	private NumberFormat format = NumberFormat.getCurrencyInstance();
 	
+	// initialize all FXML buttons and elements that change
 	@FXML
 	private void initialize() throws Exception
 	{
@@ -73,35 +83,50 @@ public class AccountScreenController
 		depositError.setText("");
 		withdrawError.setText("");
 	}
-	
+
+	// init data for when this panel is called
+	/**
+	 * @param username Takes the username that will be used for the databse calls and comparisons
+	 */
 	public void initData(String username)
 	{
+		// sets the username instance variable for this class to the parameter
 		this.username = username;
+		// connection manager
 		try {
+			// initializes a new connection
 			cm = new ConnectionManager();
+			// sets the label balance
 			this.balance = cm.getUserBalance(this.username);
 			lblBalance.setText("Balance: " + format.format(this.balance));
 			
+			// gets the user's name and displays a welcome message
 			lblNameDisplay.setText("Welcome, " + cm.getUsersName(this.username));
-			
+			// close the connection to the MYSQL database
 			cm.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
+		}
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
 
-
+		
+		// manages the savings account tab
 		try
 		{
+			// another connection
 			ConnectionManager cm = new ConnectionManager();
 			
+			// if the user has a savings account
 			if(cm.hasSavings(username))
 			{
+				// loads another fxml class which consists of a simple panel containing the savings account
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
 				VBox savingsData = loader.load();
 				SavingsController savingsController = loader.getController();
 				savingsController.initData(username);
-		
+				
 				savingsPane.setCenter(savingsData);
 		
 			}
@@ -153,15 +178,24 @@ public class AccountScreenController
 					transferError.setText("Please enter a value greather than 0");
 					throw new Exception();
 				}
+
 				
 				newBalance = Math.floor(newBalance * 100) / 100;
-				
-				cm.transferAmount(username, newBalance);
-				
-				lblBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));
 
+				if(newBalance <= cm.getUserBalance(username))
+				{
+					cm.transferAmount(username, newBalance);
+					
+					lblBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));	
 
-				transferError.setText("");
+					transferError.setText("");
+					
+				}
+				else
+				{
+					transferError.setText("Insufficient Funds");
+				}
+				
 				
 				cm.close();
 				
@@ -343,11 +377,10 @@ public class AccountScreenController
 				e.printStackTrace();
 			}
 			
-	
-			
-			
 		}
 		
 	}
+
+	
 	
 }

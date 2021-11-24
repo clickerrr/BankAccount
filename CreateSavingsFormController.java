@@ -3,15 +3,17 @@ package bankAccountStorage;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-public class CreateSavingsFormController
+public class CreateSavingsFormController extends AccountScreenController
 {
 	@FXML
 	private VBox parentVbox;
@@ -39,6 +41,13 @@ public class CreateSavingsFormController
 	
 	private String username;
 	
+	private BorderPane superPane;
+	
+	public CreateSavingsFormController()
+	{
+		
+	}
+	
 	@FXML
 	public void initialize() throws Exception
 	{
@@ -56,9 +65,10 @@ public class CreateSavingsFormController
 		submitButton.setOnAction(new SubmitButtonHandler());
 	}
 	
-	public void initData(String username)
+	public void initData(String username, BorderPane superPane)
 	{
 		this.username = username;
+		this.superPane = superPane;
 		parentVbox.getChildren().clear();
 		
 		try
@@ -135,8 +145,8 @@ public class CreateSavingsFormController
 				
 				cm.createSavings(username, savingPlan, balance);
 				
-				errorText.setTextFill(Color.GREEN);
-				errorText.setText("Savings Account Created, Please Re-Login\nOr Transfer Funds to view");
+				refreshSavings();
+				
 				cm.close();
 			}
 			catch(Exception e)
@@ -147,6 +157,33 @@ public class CreateSavingsFormController
 			
 		}
 		
+	}
+	
+	public void refreshSavings()
+	{
+		// manages the savings account tab
+		try
+		{
+			// another connection
+			ConnectionManager cm = new ConnectionManager();
+			
+			// if the user has a savings account
+			if(cm.hasSavings(username))
+			{
+				// loads another fxml class which consists of a simple panel containing the savings account
+				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
+				VBox savingsData = loader.load();
+				SavingsController savingsController = loader.getController();
+				savingsController.initData(username);
+				superPane.getChildren().clear();
+				superPane.setCenter(savingsData);
+			}	
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	

@@ -7,10 +7,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 public class ChangePasswordController 
 {
-
+	@FXML
+	private Stage mainStage;
 	@FXML
 	private TextField newPassInput;
 	@FXML
@@ -50,6 +52,7 @@ public class ChangePasswordController
 					errorText.setTextFill(Color.GREEN);
 					errorText.setText("Password Changed");
 					buttonConfirm.setDisable(true);
+					mainStage.close();
 				}
 				else
 				{

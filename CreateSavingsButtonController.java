@@ -47,7 +47,7 @@ public class CreateSavingsButtonController extends AccountScreenController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/CreateSavingsForm.fxml"));
 				VBox createSavingsPane = loader.load();
 				CreateSavingsFormController savingsFormController = loader.getController();
-				savingsFormController.initData(username);
+				savingsFormController.initData(username, superPane);
 
 				superPane.setCenter(createSavingsPane);
 				

@@ -1,20 +1,363 @@
 package bankAccountStorage;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class AdminScreenController 
 {
-
+	private ArrayList<User> allUsers;
 	
+	@FXML
+	private Stage primaryStage;
 	
+	@FXML
+	private Button logoutButton;
+	
+	@FXML
+	private TableView<User> mainTable;
+	
+	@FXML
+	private TableColumn firstNameCol;
+	
+	@FXML
+	private TableColumn lastNameCol;
+	
+	@FXML
+	private TableColumn emailCol;
+	
+	@FXML
+	private TableColumn balanceCol;
+	
+	@FXML
+	private TableColumn sPlanCol;
+	
+	@FXML
+	private TableColumn sBalanceCol;
+	
+	@FXML
+	private ContextMenu contextMenu;
+	@FXML
+	private BorderPane mainBorderPane;
+	
+	@FXML
+	private Button refresh;
+	
+	private double newBalance;
+	
+	public AdminScreenController()
+	{
+		
+	}
 	
 	@FXML
 	private void initialize() throws Exception
+	{    
+		logoutButton.setOnAction(new LogoutButtonHandler());
+		refresh.setOnAction(new LogoutButtonHandler());
+	    mainTable.getColumns().addListener(new ListChangeListener<Object>() {
+	          public boolean suspended;
+	          @Override
+	          public void onChanged(Change change) {
+	              change.next();
+	              if (change.wasReplaced() && !suspended) {
+	                  this.suspended = true;
+	                  mainTable.getColumns().setAll(firstNameCol, lastNameCol, emailCol, balanceCol, sPlanCol, sBalanceCol);
+	                  this.suspended = false;
+	              }
+	          }
+	      });
+	    
+		firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+		lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+		emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
+		balanceCol.setCellValueFactory(new PropertyValueFactory<>("balance"));
+		sPlanCol.setCellValueFactory(new PropertyValueFactory<>("savingsPlan"));
+		sBalanceCol.setCellValueFactory(new PropertyValueFactory<>("savingsBalance"));
+
+		mainTable.setOnMousePressed(new RightClickHandler());
+		
+		allUsers = null;
+		ConnectionManager cm = null;
+		try
+		{
+			cm = new ConnectionManager();
+			allUsers = cm.adminGetAllUserData();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
+		for(int i = 0; i < allUsers.size(); i++)
+		{
+			mainTable.getItems().add(allUsers.get(i));
+		}
+		
+		mainTable.getSelectionModel().selectFirst();
+		
+	}
+	
+	private class LogoutButtonHandler implements EventHandler<ActionEvent>
+	{
+
+		@Override
+		public void handle(ActionEvent e) 
+		{
+			if(e.getSource() == logoutButton)
+			{
+
+				primaryStage.close();
+				try {
+					Stage login = FXMLLoader.load(getClass().getResource("/bankAccountStorage/LoginScreen.fxml"));
+					login.show();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			}
+			else if (e.getSource() == refresh)
+			{
+				refreshTable();
+			}
+			
+		}
+		
+	}
+	
+	private class RightClickHandler implements EventHandler<MouseEvent>
+	{
+
+		@Override
+		public void handle(MouseEvent e)
+		{
+			if(e.getButton() == MouseButton.SECONDARY)
+			{
+				try
+				{
+					contextMenu = FXMLLoader.load(getClass().getResource("/bankAccountStorage/AdminContextMenu.fxml"));
+				} 
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+				}
+				((TableView)e.getSource()).setContextMenu(contextMenu);
+				contextMenu.setOnAction(new ContextMenuHandler((TableView)e.getSource()));
+			}
+			else if(e.getButton() == MouseButton.PRIMARY)
+			{
+			}
+
+		}
+		
+	}
+	
+	private class ContextMenuHandler implements EventHandler<ActionEvent>
 	{
 		
+		TableView node = null;
+		public ContextMenuHandler(TableView target)
+		{
+			node = target;
+		}
+		
+		public void handle(ActionEvent e)
+		{
+			int selectedRow = node.getSelectionModel().getSelectedIndex();
+
+			MenuItem mu = (MenuItem)e.getTarget();
+			
+			switch(mu.getText())
+			{
+				case "Update Balance":
+					System.out.println("Update Balance " + selectedRow);
+					updateUserBalance(selectedRow);
+					break;
+				case "Update Savings Balance":
+					System.out.println("Update Savings Balance " + selectedRow);
+					updateUserSavingsBalance(selectedRow);
+					break;
+				case "Delete User":
+					System.out.println("Delete User " + selectedRow);
+					deleteUser(selectedRow);
+					break;
+			}
+
+		}
+		
+		private void updateUserBalance(int index)
+		{	
+			User user = findUser(emailCol.getCellData(index).toString());
+
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/adminNewBalance.fxml"));
+
+			Stage newBalanceStage = null;
+			
+			try 
+			{
+				newBalanceStage = loader.load();
+			}
+			catch (IOException e1) 
+			{
+				e1.printStackTrace();
+			}
+			
+			adminNewBalanceController newBalanceController = loader.getController();
+			newBalanceController.initData(user.getUsername(), "balance");
+			newBalanceStage.showAndWait();
+			refreshTable();
+				
+			ConnectionManager cm = null;
+			try
+			{
+				cm = new ConnectionManager();
+			}
+			catch(SQLException e)
+			{
+				e.printStackTrace();
+			}
+			
+		}
+		
+		private void updateUserSavingsBalance(int index)
+		{
+			User user = findUser(emailCol.getCellData(index).toString());
+			
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/adminNewBalance.fxml"));
+			Stage newBalanceStage = null;
+			
+			try 
+			{
+				newBalanceStage = loader.load();
+			}
+			catch (IOException e1) 
+			{
+				e1.printStackTrace();
+			}
+			
+			adminNewBalanceController newBalanceController = loader.getController();
+			newBalanceController.initData(user.getUsername(), "savings");
+			newBalanceStage.showAndWait();
+			refreshTable();
+				
+			ConnectionManager cm = null;
+			try
+			{
+				cm = new ConnectionManager();
+			}
+			catch(SQLException e)
+			{
+				e.printStackTrace();
+			}
+			
+		}
+		
+		private void deleteUser(int index)
+		{
+			
+			User user = findUser(emailCol.getCellData(index).toString());
+			
+			ConnectionManager cm = null;
+			try
+			{
+				cm = new ConnectionManager();
+				cm.adminDeleteUser(user.getUsername());
+			}
+			catch(SQLException e)
+			{
+				e.printStackTrace();
+			}
+			
+			refreshTable();
+				
+		}
 		
 		
 	}
 
+	private class SubWindowCloseEventHandler implements EventHandler<WindowEvent>
+	{
+
+		@Override
+		public void handle(WindowEvent e) 
+		{
+			refreshTable();
+		}
+		
+	}
+	
+	private User findUser(String email)
+	{
+		
+		User returnUser = null;
+		
+		int start = 0;
+		int middle = allUsers.size() / 2;
+		int end = allUsers.size() - 1;
+		
+		while(returnUser == null)
+		{
+			if(email.compareTo(allUsers.get(middle).getEmail()) > 0)
+			{
+				start = middle + 1;
+				middle = start + ((end - start) / 2); 
+			}
+			else if(email.compareTo(allUsers.get(middle).getEmail()) < 0)
+			{
+				end = middle - 1;
+				middle = (end - start) / 2;
+			}
+			else
+			{
+				returnUser = allUsers.get(middle);
+			}
+			
+		}
+		
+		return returnUser;
+		
+	}
+
+	public void refreshTable()
+	{
+		allUsers.clear();
+		mainTable.getItems().clear();
+		ConnectionManager cm = null;
+		try
+		{
+			cm = new ConnectionManager();
+			allUsers = cm.adminGetAllUserData();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
+		for(int i = 0; i < allUsers.size(); i++)
+		{
+			mainTable.getItems().add(allUsers.get(i));
+		}
+		
+		mainTable.getSelectionModel().selectFirst();
+		System.out.println("Table refreshed!");
+	}
 	
 }

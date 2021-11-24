@@ -105,7 +105,7 @@ public class SavingsController
 						Math.abs(Seconds.secondsBetween(lastTimeAccessed, timeNow).getSeconds())
 				};
 			
-			double newBalance = principal * Math.pow(Math.E, rate * timeDifference[3]);
+			double newBalance = principal * Math.pow(Math.E, rate * timeDifference[2]);
 			newBalance =  Math.floor(newBalance * 100) / 100;
 			// now we have to insert and update the new balance, and then update the time accessed
 

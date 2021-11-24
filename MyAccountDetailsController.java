@@ -19,6 +19,8 @@ public class MyAccountDetailsController
 	@FXML
 	private Label lblBalance;
 	@FXML
+	private Label lblSavings;
+	@FXML
 	private Label lblName;
 	@FXML
 	private Label lblUsername;
@@ -80,10 +82,19 @@ public class MyAccountDetailsController
 				System.out.println(userDetails.get(i));
 			}
 			
-			lblBalance.setText(this.format.format(Double.parseDouble(userDetails.get(0))));
-			lblName.setText(userDetails.get(1));
-			lblUsername.setText(userDetails.get(2));
-			lblEmail.setText(userDetails.get(3));
+			if(userDetails.get(1) == null)
+			{
+				lblBalance.setText(this.format.format( Double.parseDouble(userDetails.get(0)) ));
+				lblSavings.setText("$0");
+			}
+			else
+			{
+				lblBalance.setText(this.format.format( Double.parseDouble(userDetails.get(0)) + Double.parseDouble(userDetails.get(1)) ));
+				lblSavings.setText("$0");
+			}
+			lblName.setText(userDetails.get(2));
+			lblUsername.setText(userDetails.get(3));
+			lblEmail.setText(userDetails.get(4));
 			
 			cm.close();
 			
