@@ -54,41 +54,51 @@ public class CreateAccountController
 		@Override
 		public void handle(ActionEvent arg0)
 		{
-			if(passwordField.getText().equals(rPassField.getText()))
+			if(!usernameField.getText().equals("admin"))
 			{
-				ConnectionManager cm = null;
-				try
+				
+				if(passwordField.getText().equals(rPassField.getText()))
 				{
-					 cm = new ConnectionManager();
-					 cm.createAccount(fNameField.getText(), lNameField.getText(), usernameField.getText(), emailField.getText(), passwordField.getText());
-					 primaryStage.close();
-					 errorLabel.setTextFill(Color.GREEN);
-					 
-					 errorLabel.setText("Account Successfully Created");
-					 createAccountButton.setDisable(true);
-					 cm.close();
-				} 
-				catch (SQLException e) 
-				{
-					errorLabel.setTextFill(Color.RED);
-					errorLabel.setText(e.getMessage());
-					createAccountButton.setDisable(false);
-					e.printStackTrace();
+					ConnectionManager cm = null;
+					try
+					{
+						 cm = new ConnectionManager();
+						 cm.createAccount(fNameField.getText(), lNameField.getText(), usernameField.getText(), emailField.getText(), passwordField.getText());
+						 primaryStage.close();
+						 errorLabel.setTextFill(Color.GREEN);
+						 
+						 errorLabel.setText("Account Successfully Created");
+						 createAccountButton.setDisable(true);
+						 cm.close();
+					} 
+					catch (SQLException e) 
+					{
+						errorLabel.setTextFill(Color.RED);
+						errorLabel.setText(e.getMessage());
+						createAccountButton.setDisable(false);
+						e.printStackTrace();
+					}
+					catch (NoSuchAlgorithmException e)
+					{
+						errorLabel.setTextFill(Color.RED);
+						errorLabel.setText(e.getMessage());
+						createAccountButton.setDisable(false);
+						e.printStackTrace();
+					}
+					
 				}
-				catch (NoSuchAlgorithmException e)
+				else
 				{
 					errorLabel.setTextFill(Color.RED);
-					errorLabel.setText(e.getMessage());
 					createAccountButton.setDisable(false);
-					e.printStackTrace();
+					errorLabel.setText("Passwords do not match");
 				}
 				
 			}
 			else
 			{
 				errorLabel.setTextFill(Color.RED);
-				createAccountButton.setDisable(false);
-				errorLabel.setText("Passwords do not match");
+				errorLabel.setText("Username unavailable");
 			}
 			
 		}

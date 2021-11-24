@@ -11,6 +11,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -35,9 +37,26 @@ public class LoginScreenController
 	
 		createAccountBtn.setOnAction(new CreateAccountButtonHandler());
 		loginButton.setOnAction(new LoginButtonHandler());
+		usernameField.setOnKeyPressed(new EnterKeyHandler());
+		passwordField.setOnKeyPressed(new EnterKeyHandler());
 		errorLabel.setText("");
 		
 		
+		
+	}
+	
+	private class EnterKeyHandler implements EventHandler<KeyEvent>
+	{
+
+		@Override
+		public void handle(KeyEvent e) 
+		{
+			if(e.getCode().equals(KeyCode.ENTER))
+			{
+				new LoginButtonHandler().handle(null);;
+			}
+
+		}
 		
 	}
 	
