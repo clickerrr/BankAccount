@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="506.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bankAccountStorage.SavingsController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="123.0" prefWidth="506.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bankAccountStorage.SavingsController">
    <children>
       <HBox alignment="CENTER" prefHeight="62.0" prefWidth="600.0">
          <children>
@@ -20,6 +23,39 @@
       <HBox alignment="CENTER" prefHeight="33.0" prefWidth="600.0">
          <children>
             <Label fx:id="savingPlan" text="Current Savings Plan: " />
+         </children>
+      </HBox>
+      <HBox fx:id="actionHbox" alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="506.0">
+         <children>
+            <MenuButton fx:id="actionSelection" mnemonicParsing="false" text="Select an Action">
+              <items>
+                <MenuItem fx:id="transferBalance" mnemonicParsing="false" text="Transfer Balance" />
+                <MenuItem fx:id="changeSavings" mnemonicParsing="false" text="Change Savings Plan" />
+              </items>
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </MenuButton>
+            <MenuButton fx:id="savingsPlanSelection" mnemonicParsing="false" text="Select A Savings Plan">
+              <items>
+                <MenuItem fx:id="miA" mnemonicParsing="false" text="A" />
+                <MenuItem fx:id="miB" mnemonicParsing="false" text="B" />
+                  <MenuItem fx:id="miC" mnemonicParsing="false" text="C" />
+              </items>
+               <HBox.margin>
+                  <Insets left="5.0" />
+               </HBox.margin>
+            </MenuButton>
+            <TextField fx:id="amountTransferField" promptText="Enter An Amount">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </TextField>
+            <Label fx:id="errorText" text="Label" textFill="RED">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
          </children>
       </HBox>
    </children>

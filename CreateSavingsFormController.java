@@ -43,6 +43,8 @@ public class CreateSavingsFormController extends AccountScreenController
 	
 	private BorderPane superPane;
 	
+	private Label superBalance;
+	
 	public CreateSavingsFormController()
 	{
 		
@@ -65,10 +67,11 @@ public class CreateSavingsFormController extends AccountScreenController
 		submitButton.setOnAction(new SubmitButtonHandler());
 	}
 	
-	public void initData(String username, BorderPane superPane)
+	public void initData(String username, BorderPane superPane, Label superBalance)
 	{
 		this.username = username;
 		this.superPane = superPane;
+		this.superBalance = superBalance;
 		parentVbox.getChildren().clear();
 		
 		try
@@ -174,7 +177,7 @@ public class CreateSavingsFormController extends AccountScreenController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
 				VBox savingsData = loader.load();
 				SavingsController savingsController = loader.getController();
-				savingsController.initData(username);
+				savingsController.initData(username, superBalance);
 				superPane.getChildren().clear();
 				superPane.setCenter(savingsData);
 			}	

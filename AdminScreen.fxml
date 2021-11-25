@@ -38,7 +38,7 @@
                            </TableView>
                            <Button fx:id="refresh" layoutX="14.0" layoutY="305.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="95.0" text="Refresh Table" />
                            <CheckBox fx:id="deleteModeCheck" layoutX="118.0" layoutY="309.0" mnemonicParsing="false" text="Delete Mode: " />
-                           <Label fx:id="offonLabel" layoutX="214.0" layoutY="309.0" text="Off" textFill="#00ff39" />
+                           <Label fx:id="offonLabel" layoutX="214.0" layoutY="309.0" text="Disabled" textFill="#00ff39" />
                            <Label fx:id="deleteModeError" layoutX="118.0" layoutY="337.0" text="Label" />
                            <Label fx:id="errorText" alignment="CENTER" layoutX="612.0" layoutY="301.0" prefHeight="42.0" prefWidth="141.0" text="Label" textFill="RED" wrapText="true" />
                         </children>

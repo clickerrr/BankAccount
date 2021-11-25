@@ -24,6 +24,50 @@ public class ConnectionManager
 		System.out.println("Successfully Connected");	
 	}
 	
+	public void withdrawFromSavings(String username, double amount) throws SQLException
+	{
+		
+		String query = "select savingBalance from accounts.account_information where username=?";
+		
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setString(1, username);
+		ResultSet rs = preparedStatement.executeQuery();
+		
+		double newBalance = 0;
+		
+		while(rs.next())
+		{
+			newBalance = rs.getDouble("savingBalance");
+		}
+		
+		newBalance -= amount;
+		
+		query = "update accounts.account_information set savingBalance=? where username=?";
+		
+		preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setDouble(1, newBalance);
+		preparedStatement.setString(2, username);
+		
+		preparedStatement.execute();
+		
+	}
+	
+	public void changeSavingsPlan(String username, String newSavingsPlan) throws SQLException
+	{
+		
+		String query = "update accounts.account_information set savingPlan=? where username=?";
+		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+
+		preparedStatement.setString(1, newSavingsPlan);
+		preparedStatement.setString(2, username);
+		
+		preparedStatement.execute();
+		
+	}
+	
 	public void transferAmount(String username, double amount) throws SQLException
 	{
 		withdrawAmount(amount, username);
@@ -278,7 +322,7 @@ public class ConnectionManager
 		
 	}
 	
-	public void depositAmount(double balance, String username) throws SQLException
+	public void depositAmount(double amount, String username) throws SQLException
 	{
 		String query = "select balance from accounts.account_information where username=?";
 		
@@ -294,7 +338,7 @@ public class ConnectionManager
 			newBalance = rs.getDouble("balance");
 		}
 		
-		newBalance += balance;
+		newBalance += amount;
 		
 		query = "update accounts.account_information set balance=? where username=?";
 		

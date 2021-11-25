@@ -125,7 +125,7 @@ public class AccountScreenController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
 				VBox savingsData = loader.load();
 				SavingsController savingsController = loader.getController();
-				savingsController.initData(username);
+				savingsController.initData(username, lblBalance);
 				
 				savingsPane.setCenter(savingsData);
 		
@@ -135,7 +135,7 @@ public class AccountScreenController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/CreateSavingsButton.fxml"));
 				VBox createSavingsPane = loader.load();
 				CreateSavingsButtonController csbController = loader.getController();
-				csbController.initData(username, savingsPane);
+				csbController.initData(username, savingsPane, lblBalance);
 		
 				savingsPane.setCenter(createSavingsPane);
 			}
@@ -204,7 +204,7 @@ public class AccountScreenController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
 				VBox savingsData = loader.load();
 				SavingsController savingsController = loader.getController();
-				savingsController.initData(username);
+				savingsController.initData(username, lblBalance);
 		
 				savingsPane.setCenter(savingsData);
 				
@@ -281,24 +281,24 @@ public class AccountScreenController
 		public void handle(ActionEvent arg0) 
 		{
 			
-			double newBalance;
+			double amount;
 			ConnectionManager cm;
 			try
 			{
 				cm = new ConnectionManager();
 				
 				
-				newBalance = Double.parseDouble(depositAmount.getText());
+				amount = Double.parseDouble(depositAmount.getText());
 				
-				if(newBalance <= 0)
+				if(amount <= 0)
 				{
 					depositError.setText("Please enter a value greather than 0");
 					throw new Exception();
 				}
 				
-				newBalance = Math.floor(newBalance * 100) / 100;
+				amount = Math.floor(amount * 100) / 100;
 				
-				cm.depositAmount(newBalance, username);
+				cm.depositAmount(amount, username);
 				
 				lblBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));
 

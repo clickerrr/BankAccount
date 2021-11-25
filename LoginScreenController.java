@@ -53,7 +53,7 @@ public class LoginScreenController
 		{
 			if(e.getCode().equals(KeyCode.ENTER))
 			{
-				new LoginButtonHandler().handle(null);;
+				new LoginButtonHandler().handle(null);
 			}
 
 		}
