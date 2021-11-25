@@ -10,7 +10,9 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -18,6 +20,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -60,16 +63,28 @@ public class AdminScreenController
 	@FXML
 	private Button refresh;
 	
-	private double newBalance;
+	@FXML
+	private CheckBox deleteModeCheck;
+	@FXML
+	private Label offonLabel;
+	@FXML
+	private Label deleteModeError;
+	@FXML
+	private Label errorText;
 	
-	public AdminScreenController()
-	{
-		
-	}
+	private double newBalance;
+	private boolean deleteMode;
 	
 	@FXML
 	private void initialize() throws Exception
 	{    
+		deleteModeError.setText("");
+		deleteModeError.setTextFill(Color.RED);
+		deleteModeCheck.setOnAction(new DeleteModeHandler());
+		
+		errorText.setText("");
+		
+		deleteMode = false;
 		logoutButton.setOnAction(new LogoutButtonHandler());
 		refresh.setOnAction(new LogoutButtonHandler());
 	    mainTable.getColumns().addListener(new ListChangeListener<Object>() {
@@ -112,6 +127,40 @@ public class AdminScreenController
 		}
 		
 		mainTable.getSelectionModel().selectFirst();
+		
+	}
+	
+	private class DeleteModeHandler implements EventHandler<ActionEvent>
+	{
+
+		@Override
+		public void handle(ActionEvent e)
+		{
+
+			if(e.getSource() == deleteModeCheck)
+			{
+				if(deleteModeCheck.isSelected())
+				{
+					if(!deleteModeError.getText().isBlank())
+						deleteModeError.setText("");
+					deleteMode = true;
+					offonLabel.setText("Enabled");
+					offonLabel.setTextFill(Color.RED);
+				}
+				else
+				{
+					deleteMode = false;
+					offonLabel.setText("Disabled");
+					offonLabel.setTextFill(Color.GREEN);
+				}
+				
+				
+			}
+	
+		}
+		
+		
+		
 		
 	}
 	
@@ -188,16 +237,20 @@ public class AdminScreenController
 			switch(mu.getText())
 			{
 				case "Update Balance":
-					System.out.println("Update Balance " + selectedRow);
 					updateUserBalance(selectedRow);
 					break;
 				case "Update Savings Balance":
-					System.out.println("Update Savings Balance " + selectedRow);
 					updateUserSavingsBalance(selectedRow);
 					break;
 				case "Delete User":
-					System.out.println("Delete User " + selectedRow);
-					deleteUser(selectedRow);
+					if(deleteMode)
+					{
+						deleteUser(selectedRow);
+					}
+					else
+					{
+						deleteModeError.setText("Enable Deletion Mode to Delete Users");
+					}
 					break;
 			}
 
@@ -224,17 +277,6 @@ public class AdminScreenController
 			newBalanceController.initData(user.getUsername(), "balance");
 			newBalanceStage.showAndWait();
 			refreshTable();
-				
-			ConnectionManager cm = null;
-			try
-			{
-				cm = new ConnectionManager();
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
-			
 		}
 		
 		private void updateUserSavingsBalance(int index)
@@ -244,29 +286,31 @@ public class AdminScreenController
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/adminNewBalance.fxml"));
 			Stage newBalanceStage = null;
 			
-			try 
+			if(user.getSavingsPlan().equals("None"))
 			{
-				newBalanceStage = loader.load();
+				errorText.setText("User Does Not Have a Savings Account");
 			}
-			catch (IOException e1) 
+			else
 			{
-				e1.printStackTrace();
+				if(!errorText.getText().isBlank())
+				{
+					errorText.setText("");
+				}
+				try 
+				{
+					newBalanceStage = loader.load();
+				}
+				catch (IOException e1) 
+				{
+					e1.printStackTrace();
+				}
+				
+				adminNewBalanceController newBalanceController = loader.getController();
+				newBalanceController.initData(user.getUsername(), "savings");
+				newBalanceStage.showAndWait();
+				refreshTable();
 			}
 			
-			adminNewBalanceController newBalanceController = loader.getController();
-			newBalanceController.initData(user.getUsername(), "savings");
-			newBalanceStage.showAndWait();
-			refreshTable();
-				
-			ConnectionManager cm = null;
-			try
-			{
-				cm = new ConnectionManager();
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
 			
 		}
 		
