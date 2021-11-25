@@ -17,12 +17,13 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 public class AdminScreenController 
 {
@@ -108,6 +109,7 @@ public class AdminScreenController
 		sBalanceCol.setCellValueFactory(new PropertyValueFactory<>("savingsBalance"));
 
 		mainTable.setOnMousePressed(new RightClickHandler());
+		mainTable.setOnKeyPressed(new DeleteKeyEventHandler(mainTable));
 		
 		allUsers = null;
 		ConnectionManager cm = null;
@@ -256,33 +258,77 @@ public class AdminScreenController
 
 		}
 		
-		private void updateUserBalance(int index)
-		{	
-			User user = findUser(emailCol.getCellData(index).toString());
+		
+		
+	}
+	
+	
+	private class DeleteKeyEventHandler implements EventHandler<KeyEvent>
+	{
+		TableView node = null;
+		public DeleteKeyEventHandler(TableView target)
+		{
+			node = target;
+		}
 
+		@Override
+		public void handle(KeyEvent e)
+		{
+			if(e.getCode().equals(KeyCode.DELETE))
+			{
+				int selectedRow = node.getSelectionModel().getSelectedIndex();
+
+				if(deleteMode)
+				{
+					deleteUser(selectedRow);
+				}
+				else
+				{
+					deleteModeError.setText("Enable Deletion Mode to Delete Users");
+				}
+			}
+			
+		}
+		
+	}
+	
+	private void updateUserBalance(int index)
+	{	
+		try 
+		{
+			User user = findUser(emailCol.getCellData(index).toString());
+			errorText.setText("");
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/adminNewBalance.fxml"));
 
 			Stage newBalanceStage = null;
-			
-			try 
-			{
-				newBalanceStage = loader.load();
-			}
-			catch (IOException e1) 
-			{
-				e1.printStackTrace();
-			}
+			newBalanceStage = loader.load();
 			
 			adminNewBalanceController newBalanceController = loader.getController();
 			newBalanceController.initData(user.getUsername(), "balance");
 			newBalanceStage.showAndWait();
 			refreshTable();
+		
+		}
+		catch(NullPointerException e)
+		{
+			errorText.setText("No User selected");
+			e.printStackTrace();
+		}
+		catch (IOException e) 
+		{
+			e.printStackTrace();
 		}
 		
-		private void updateUserSavingsBalance(int index)
+		
+	}
+		
+	
+	private void updateUserSavingsBalance(int index)
+	{
+		try
 		{
 			User user = findUser(emailCol.getCellData(index).toString());
-			
+			errorText.setText("");
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/adminNewBalance.fxml"));
 			Stage newBalanceStage = null;
 			
@@ -296,54 +342,51 @@ public class AdminScreenController
 				{
 					errorText.setText("");
 				}
-				try 
-				{
-					newBalanceStage = loader.load();
-				}
-				catch (IOException e1) 
-				{
-					e1.printStackTrace();
-				}
+			
+				newBalanceStage = loader.load();
 				
 				adminNewBalanceController newBalanceController = loader.getController();
 				newBalanceController.initData(user.getUsername(), "savings");
 				newBalanceStage.showAndWait();
 				refreshTable();
 			}
-			
-			
-		}
 		
-		private void deleteUser(int index)
+		}
+		catch(NullPointerException e)
 		{
+			errorText.setText("No User selected");
+			e.printStackTrace();
+		}
+		catch (IOException e1) 
+		{
+			e1.printStackTrace();
+		}
 			
+		
+	}
+	
+	private void deleteUser(int index)
+	{
+		
+		
+		ConnectionManager cm = null;
+		try
+		{
 			User user = findUser(emailCol.getCellData(index).toString());
-			
-			ConnectionManager cm = null;
-			try
-			{
-				cm = new ConnectionManager();
-				cm.adminDeleteUser(user.getUsername());
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
-			
+			cm = new ConnectionManager();
+			cm.adminDeleteUser(user.getUsername());
+			errorText.setText("");
 			refreshTable();
 				
 		}
-		
-		
-	}
-
-	private class SubWindowCloseEventHandler implements EventHandler<WindowEvent>
-	{
-
-		@Override
-		public void handle(WindowEvent e) 
+		catch(SQLException e)
 		{
-			refreshTable();
+			e.printStackTrace();
+		}
+		catch(NullPointerException e)
+		{
+			errorText.setText("No User selected");
+			e.printStackTrace();
 		}
 		
 	}
@@ -383,6 +426,8 @@ public class AdminScreenController
 	public void refreshTable()
 	{
 		allUsers.clear();
+		int index = mainTable.getSelectionModel().getSelectedIndex();
+		
 		mainTable.getItems().clear();
 		ConnectionManager cm = null;
 		try
@@ -400,7 +445,16 @@ public class AdminScreenController
 			mainTable.getItems().add(allUsers.get(i));
 		}
 		
-		mainTable.getSelectionModel().selectFirst();
+		if(index == mainTable.getItems().size())
+		{
+			mainTable.getSelectionModel().selectLast();
+		}
+		else
+		{
+			mainTable.getSelectionModel().select(index);
+		}
+
+		
 		System.out.println("Table refreshed!");
 	}
 	
