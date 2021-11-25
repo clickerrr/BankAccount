@@ -1,0 +1,15 @@
+CREATE TABLE account_information (
+	id int NOT NULL,
+	firstName VARCHAR(45) NOT NULL,
+	lastName VARCHAR(45) NOT NULL,
+	username VARCHAR(45) NOT NULL,
+	email VARCHAR(45) NOT NULL,
+	password BLOB NOT NULL,
+	salt BLOB NOT NULL,
+	balance DECIMAL(65,2) NOT NULL DEFAULT '0.00',
+	savings TINYINT NOT NULL DEFAULT '0',
+	savingPlan VARCHAR(45) DEFAULT 'NULL',
+	savingBalance DECIMAL(65,2) DEFAULT '0.00',
+	timeCreated TIMESTAMP,
+	PRIMARY KEY(id)
+);
