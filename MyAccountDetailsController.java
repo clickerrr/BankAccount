@@ -90,7 +90,7 @@ public class MyAccountDetailsController
 			else
 			{
 				lblBalance.setText(this.format.format( Double.parseDouble(userDetails.get(0)) + Double.parseDouble(userDetails.get(1)) ));
-				lblSavings.setText("$" + this.format.format( Double.parseDouble(userDetails.get(1)) ));
+				lblSavings.setText(this.format.format( Double.parseDouble(userDetails.get(1)) ));
 			}
 			lblName.setText(userDetails.get(2));
 			lblUsername.setText(userDetails.get(3));
