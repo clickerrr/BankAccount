@@ -1,9 +1,6 @@
 package bankAccountStorage;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -28,8 +25,8 @@ public class MyAccountDetailsController
 	private Label lblEmail;
 	@FXML
 	private Button buttonChangePassword;
-	
-	private String username;
+
+	private User user;
 	
 	private NumberFormat format = NumberFormat.getCurrencyInstance();
 	
@@ -37,6 +34,28 @@ public class MyAccountDetailsController
 	private void initialize() throws Exception
 	{
 		buttonChangePassword.setOnAction(new ChangePasswordButtonHandler());
+		
+	}
+	
+	public void initData(User user)
+	{
+		this.user = user;
+	
+		System.out.println(user.toString());
+		
+		if(user.getSavingsPlan() == null)
+		{
+			lblBalance.setText(this.format.format( Double.parseDouble(user.getBalance()) ));
+			lblSavings.setText("$0");
+		}
+		else
+		{
+			lblBalance.setText(this.format.format( Double.parseDouble(user.getBalance()) + Double.parseDouble(user.getSavingsBalance()) ));
+			lblSavings.setText(this.format.format( Double.parseDouble(user.getSavingsBalance()) ));
+		}
+		lblName.setText(user.getFirstName() + " " +user.getLastName());
+		lblUsername.setText(user.getUsername());
+		lblEmail.setText(user.getEmail());
 		
 	}
 	
@@ -51,7 +70,7 @@ public class MyAccountDetailsController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/ChangePassword.fxml"));
 				Stage accountDetails = loader.load();
 				ChangePasswordController changePassController = loader.getController();
-				changePassController.initData(username);
+				changePassController.initData(user);
 				accountDetails.show();		
 			}
 			catch(Exception e)
@@ -60,54 +79,6 @@ public class MyAccountDetailsController
 			}
 	
 		}
-		
-	}
-	
-	public void initData(String username)
-	{
-	
-		this.username = username;
-		
-		ArrayList<String> userDetails;
-		ConnectionManager cm;
-		
-		try
-		{
-			cm = new ConnectionManager();
-			
-			userDetails = cm.getUserDetails(this.username);
-
-			for(int i = 0; i< userDetails.size(); i++)
-			{
-				System.out.println(userDetails.get(i));
-			}
-			
-			if(userDetails.get(1) == null)
-			{
-				lblBalance.setText(this.format.format( Double.parseDouble(userDetails.get(0)) ));
-				lblSavings.setText("$0");
-			}
-			else
-			{
-				lblBalance.setText(this.format.format( Double.parseDouble(userDetails.get(0)) + Double.parseDouble(userDetails.get(1)) ));
-				lblSavings.setText(this.format.format( Double.parseDouble(userDetails.get(1)) ));
-			}
-			lblName.setText(userDetails.get(2));
-			lblUsername.setText(userDetails.get(3));
-			lblEmail.setText(userDetails.get(4));
-			
-			cm.close();
-			
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		
 		
 	}
 	

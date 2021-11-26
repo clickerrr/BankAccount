@@ -11,158 +11,142 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class LoginScreenController 
 {
+	// primary stage
 	@FXML
 	private Stage primaryStage;
+	// field for username
 	@FXML
 	private TextField usernameField;
+	// field for password
 	@FXML
 	private TextField passwordField;
+	// login button
 	@FXML
 	private Button loginButton;
+	// create account button
 	@FXML
 	private Button createAccountBtn;
+	// error label that displays any errors
 	@FXML
 	private Label errorLabel;
 	
+	// initialize that runs when the loader is loaded
 	@FXML
 	private void initialize() throws Exception
 	{
-	
-		createAccountBtn.setOnAction(new CreateAccountButtonHandler());
-		loginButton.setOnAction(new LoginButtonHandler());
-		usernameField.setOnKeyPressed(new EnterKeyHandler());
-		passwordField.setOnKeyPressed(new EnterKeyHandler());
+		createAccountBtn.setOnAction(new ButtonHandler());
+		loginButton.setOnAction(new ButtonHandler());
+		usernameField.setOnAction(new ButtonHandler());
+		passwordField.setOnAction(new ButtonHandler());
 		errorLabel.setText("");
-		
-		
-		
 	}
 	
-	private class EnterKeyHandler implements EventHandler<KeyEvent>
+	// button handler that handles login events
+	private class ButtonHandler implements EventHandler<ActionEvent>
 	{
 
 		@Override
-		public void handle(KeyEvent e) 
+		public void handle(ActionEvent event)
 		{
-			if(e.getCode().equals(KeyCode.ENTER))
+			// if the event comes from the create account button
+			if(event.getSource() == createAccountBtn) 
 			{
-				new LoginButtonHandler().handle(null);
-			}
-
-		}
-		
-	}
-	
-	private class CreateAccountButtonHandler implements EventHandler<ActionEvent>
-	{
-
-		@Override
-		public void handle(ActionEvent arg0)
-		{
-			Stage primaryStage = null;
-			try
-			{
-				primaryStage = FXMLLoader.load(getClass().getResource("/bankAccountStorage/CreateAccount.fxml"));
-			} 
-		
-			catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
-		
-			primaryStage.show();
-			
-		}
-		
-	}
-	
-	private class LoginButtonHandler implements EventHandler<ActionEvent>
-	{
-
-		@Override
-		public void handle(ActionEvent arg0)
-		{
-			
-			
-			ConnectionManager connection = null;
-			try {
-				connection = new ConnectionManager();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				
-				if(usernameField.getText().isEmpty() || passwordField.getText().isEmpty())
+				// launch the create account stage
+				Stage primaryStage = null;
+				try
 				{
-					errorLabel.setTextFill(Color.RED);
-					errorLabel.setText("Please ensure all fields are filled");
-					throw new Exception();
+					primaryStage = FXMLLoader.load(getClass().getResource("/bankAccountStorage/CreateAccount.fxml"));
+				} 
+				catch (IOException e) 
+				{
+					e.printStackTrace();
 				}
-				
-				if(usernameField.getText().equals("admin") && passwordField.getText().equals("password"))
+				primaryStage.show();
+			}
+			// otherwise if the event comes from the login button, user name field, or the password field
+			else if(event.getSource() == loginButton || event.getSource() == usernameField || event.getSource() == passwordField)
+			{
+				try 
 				{
-					try
+					// if any of the fields are empty
+					if(usernameField.getText().isEmpty() || passwordField.getText().isEmpty())
 					{
+						// sets the error label text to red and shows an error message
+						errorLabel.setTextFill(Color.RED);
+						errorLabel.setText("Please ensure all fields are filled");
+						throw new Exception("Empty Fields");
+					}
+					
+					// otherwise if the admin login is provided
+					if(usernameField.getText().equals("admin") && passwordField.getText().equals("password"))
+					{
+						// launches the admin screen stage
 						FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/AdminScreen.fxml"));
 						Stage adminStage = loader.load();
 						adminStage.show();
+						// closes current stage
 						primaryStage.close();
 					}
-					catch (IOException e)
+					else
 					{
-						e.printStackTrace();
-					}
-				}
-				else
-				{
-					String username = connection.getUser(usernameField.getText(), passwordField.getText());
-					if (username == null)
-					{
-						errorLabel.setTextFill(Color.RED);
-						errorLabel.setText("Incorrect Username or Password");
-						throw new SQLException();
+						// otherwise we get a conenction and gets any users with this username and password
+						ConnectionManager connection = new ConnectionManager();
+						boolean loggedIn = connection.loginUser(usernameField.getText(), passwordField.getText());
+						
+						// if the user does not exist
+						if (!loggedIn)
+						{
+							// we have an incorrect username or password
+							errorLabel.setTextFill(Color.RED);
+							errorLabel.setText("Incorrect Username or Password");
+							throw new Exception("User not found");
+						}
+						
+						// passes the user to  
+						User user = connection.getUser(usernameField.getText());
+						connection.close();
+						
+						System.out.println(user);
+						if(user != null)
+						{	
+							// launches the account stage 
+							FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/AccountScreen.fxml"));
+							Stage accountStage = loader.load();
+							AccountScreenController accController = loader.getController();
+							
+							accController.initData(user);
+							accountStage.show();
+						}
+
+						// closes the stage
+						primaryStage.close();
 					}
 					
-					errorLabel.setTextFill(Color.GREEN);
-					errorLabel.setText("Logged In");
-					primaryStage.close();
-					try {
-						FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/AccountScreen.fxml"));
-						Stage accountStage = loader.load();
-						AccountScreenController accController = loader.getController();
-						accController.initData(username);
-						accountStage.show();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 				}
-				
-				connection.close();
-			} catch (SQLException e) {
-				loginButton.setDisable(false);
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				loginButton.setDisable(false);
-				errorLabel.setTextFill(Color.RED);
-				errorLabel.setText("fucky wucky something");
-				e.printStackTrace();
+				catch (SQLException e)
+				{
+					e.printStackTrace();
+				}
+				catch (NoSuchAlgorithmException e) 
+				{
+					errorLabel.setTextFill(Color.RED);
+					errorLabel.setText("fucky wucky something");
+					e.printStackTrace();
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
+			
 			
 		}
 		
 	}
-
 	
 }

@@ -62,10 +62,12 @@ public class AccountScreenController
 	// username String for the database references
 	private String username;
 	
-	// connection manager for any database functions
-	private ConnectionManager cm;
+	private User user;
+	
 	// balance of the user
 	private double balance;
+	
+	
 	
 	// format for currency
 	private NumberFormat format = NumberFormat.getCurrencyInstance();
@@ -74,11 +76,11 @@ public class AccountScreenController
 	@FXML
 	private void initialize() throws Exception
 	{
-		logoutButton.setOnAction(new LogoutButtonHandler());
-		depositSubmit.setOnAction(new DepositButtonHandler());
-		withdrawSubmit.setOnAction(new WithdrawButtonHandler());
-		myAccountButton.setOnAction(new MyAccountDetailsButtonHandler());
-		transferSubmit.setOnAction(new TransferSubmitButtonHandler());
+		logoutButton.setOnAction(new ButtonHandler());
+		depositSubmit.setOnAction(new ButtonHandler());
+		withdrawSubmit.setOnAction(new ButtonHandler());
+		myAccountButton.setOnAction(new ButtonHandler());
+		transferSubmit.setOnAction(new ButtonHandler());
 		transferError.setText("");
 		depositError.setText("");
 		withdrawError.setText("");
@@ -88,59 +90,44 @@ public class AccountScreenController
 	/**
 	 * @param username Takes the username that will be used for the databse calls and comparisons
 	 */
-	public void initData(String username)
+	public void initData(User user)
 	{
+		this.user = user;
 		// sets the username instance variable for this class to the parameter
-		this.username = username;
+		this.username = user.getUsername();
 		// connection manager
-		try {
-			// initializes a new connection
-			cm = new ConnectionManager();
-			// sets the label balance
-			this.balance = cm.getUserBalance(this.username);
-			lblBalance.setText("Balance: " + format.format(this.balance));
-			
-			// gets the user's name and displays a welcome message
-			lblNameDisplay.setText("Welcome, " + cm.getUsersName(this.username));
-			// close the connection to the MYSQL database
-			cm.close();
-			
-		}
-		catch (SQLException e) 
-		{
-			e.printStackTrace();
-		}
-
 		
+		// sets the label balance
+		this.balance = Double.parseDouble(user.getBalance());
+		lblBalance.setText("Balance: " + format.format(this.balance));
+		
+		// gets the user's name and displays a welcome message
+		lblNameDisplay.setText("Welcome, " + user.getFirstName() + " " + user.getLastName());
+				
 		// manages the savings account tab
 		try
 		{
-			// another connection
-			ConnectionManager cm = new ConnectionManager();
-			
+			System.out.println("SAVINGS PLAN: " + user.getSavingsPlan());
 			// if the user has a savings account
-			if(cm.hasSavings(username))
+			if(user.getSavingsPlan() != null)
 			{
 				// loads another fxml class which consists of a simple panel containing the savings account
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
 				VBox savingsData = loader.load();
 				SavingsController savingsController = loader.getController();
-				savingsController.initData(username, lblBalance);
+				savingsController.initData(user, lblBalance);
 				
 				savingsPane.setCenter(savingsData);
-		
 			}
 			else
 			{
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/CreateSavingsButton.fxml"));
 				VBox createSavingsPane = loader.load();
 				CreateSavingsButtonController csbController = loader.getController();
-				csbController.initData(username, savingsPane, lblBalance);
+				csbController.initData(user, savingsPane, lblBalance);
 		
 				savingsPane.setCenter(createSavingsPane);
 			}
-			
-			
 			
 		}
 		catch(Exception e)
@@ -148,177 +135,192 @@ public class AccountScreenController
 			e.printStackTrace();
 		}
 		
-		
-		
-		
 	}
 	
-	private class TransferSubmitButtonHandler implements EventHandler<ActionEvent>
+	private class ButtonHandler implements EventHandler<ActionEvent>
 	{
 
 		@Override
-		public void handle(ActionEvent arg0)
+		public void handle(ActionEvent event) 
 		{
-
-			double newBalance;
-			ConnectionManager cm;
-			try
+			if(event.getSource() == depositSubmit)
 			{
-				cm = new ConnectionManager();
-				if(!cm.hasSavings(username))
+				double amount;
+				ConnectionManager cm;
+				try
 				{
-					transferError.setText("No account to transfer to");
-					throw new Exception();
-				}
-				
-				newBalance = Double.parseDouble(transferAmount.getText());
-				
-				if(newBalance <= 0)
-				{
-					transferError.setText("Please enter a value greather than 0");
-					throw new Exception();
-				}
-
-				
-				newBalance = Math.floor(newBalance * 100) / 100;
-
-				if(newBalance <= cm.getUserBalance(username))
-				{
-					cm.transferAmount(username, newBalance);
+					cm = new ConnectionManager();
 					
-					lblBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));	
+					
+					amount = Double.parseDouble(depositAmount.getText());
+					
+					if(amount <= 0)
+					{
+						depositError.setText("Please enter a value greather than 0");
+						throw new Exception();
+					}
+					
+					amount = Math.floor(amount * 100) / 100;
+					
+					cm.depositAmount(amount, username);
+					user = cm.getUser(user.getUsername());
+					cm.close();
+					
+					lblBalance.setText("Balance: " + format.format(user.getBalance()));
 
-					transferError.setText("");
+					depositError.setText("");
 					
 				}
-				else
+				catch(SQLException e)
 				{
-					transferError.setText("Insufficient Funds");
+					e.printStackTrace();
 				}
-				
-				
-				cm.close();
-				
-				savingsPane.getChildren().clear();
-				
-				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
-				VBox savingsData = loader.load();
-				SavingsController savingsController = loader.getController();
-				savingsController.initData(username, lblBalance);
-		
-				savingsPane.setCenter(savingsData);
-				
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
-			catch(NumberFormatException e)
-			{
-				transferError.setText("Please enter a number");
-				e.printStackTrace();
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			
-			
-			
-		}
-		
-	}
-	
-	private class MyAccountDetailsButtonHandler implements EventHandler<ActionEvent>
-	{
-
-		@Override
-		public void handle(ActionEvent arg0) 
-		{
-			try
-			{
-			
-				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/MyAccountDetails.fxml"));
-				Stage accountDetails = loader.load();
-				MyAccountDetailsController detailsController = loader.getController();
-				detailsController.initData(username);
-				accountDetails.show();
-				
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			
-		}
-		
-	}
-	
-	private class LogoutButtonHandler implements EventHandler<ActionEvent>
-	{
-
-		@Override
-		public void handle(ActionEvent arg0) 
-		{
-
-			primaryStage.close();
-			try {
-				Stage login = FXMLLoader.load(getClass().getResource("/bankAccountStorage/LoginScreen.fxml"));
-				login.show();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	
-		}
-		
-	}
-	
-	private class DepositButtonHandler implements EventHandler<ActionEvent>
-	{
-
-		@Override
-		public void handle(ActionEvent arg0) 
-		{
-			
-			double amount;
-			ConnectionManager cm;
-			try
-			{
-				cm = new ConnectionManager();
-				
-				
-				amount = Double.parseDouble(depositAmount.getText());
-				
-				if(amount <= 0)
+				catch(NumberFormatException e)
 				{
-					depositError.setText("Please enter a value greather than 0");
-					throw new Exception();
+					depositError.setText("Please enter a number");
+					e.printStackTrace();
 				}
-				
-				amount = Math.floor(amount * 100) / 100;
-				
-				cm.depositAmount(amount, username);
-				
-				lblBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+			else if(event.getSource() == withdrawSubmit)
+			{
+				double newBalance;
+				ConnectionManager cm;
+				try
+				{
+					cm = new ConnectionManager();
+					
+					newBalance = Double.parseDouble(withdrawAmount.getText());
+					
+					if(newBalance <= 0)
+					{
+						withdrawError.setText("Please enter a value greather than 0");
+						throw new Exception();
+					}
+					
+					if(newBalance > Double.parseDouble(user.getBalance()))
+					{
+						withdrawError.setText("Insufficient Funds");
+						throw new Exception("Insufficient Funds");
+					}
+					
+					newBalance = Math.floor(newBalance * 100) / 100;
+					
+					cm.withdrawAmount(newBalance, username);
+					user = cm.getUser(user.getUsername());
+					cm.close();
+					
+					lblBalance.setText("Balance: " + format.format(user.getBalance()));
 
+					withdrawError.setText("");
+				}
+				catch(SQLException e)
+				{
+					e.printStackTrace();
+				}
+				catch(NumberFormatException e)
+				{
+					withdrawError.setText("Please enter a number");
+					e.printStackTrace();
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+			else if(event.getSource() == transferSubmit)
+			{
+				try
+				{
+					ConnectionManager cm = new ConnectionManager();
+					if(user.getSavingsPlan() != null)
+					{
+						transferError.setText("No account to transfer to");
+						throw new Exception("No Savings Account");
+					}
+					
+					double newBalance = Double.parseDouble(transferAmount.getText());
+					
+					if(newBalance <= 0)
+					{
+						transferError.setText("Please enter a value greather than 0");
+						throw new Exception();
+					}
 
-				depositError.setText("");
+					
+					newBalance = Math.floor(newBalance * 100) / 100;
+
+					if(newBalance <= balance)
+					{
+						cm.transferAmount(username, newBalance);
+						user = cm.getUser(username);
+						lblBalance.setText("Balance: " + format.format(user.getBalance()));	
+						transferError.setText("");
+						
+					}
+					else
+					{
+						transferError.setText("Insufficient Funds");
+					}
+					
+					
+					cm.close();
+					
+					savingsPane.getChildren().clear();
+					
+					FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
+					VBox savingsData = loader.load();
+					SavingsController savingsController = loader.getController();
+					savingsController.initData(user, lblBalance);
+			
+					savingsPane.setCenter(savingsData);
+					
+				}
+				catch(SQLException e)
+				{
+					e.printStackTrace();
+				}
+				catch(NumberFormatException e)
+				{
+					transferError.setText("Please enter a number");
+					e.printStackTrace();
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+
+			}
+			else if(event.getSource() == logoutButton)
+			{
+				primaryStage.close();
+				try {
+					Stage login = FXMLLoader.load(getClass().getResource("/bankAccountStorage/LoginScreen.fxml"));
+					login.show();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else if(event.getSource() == myAccountButton)
+			{
+				try
+				{
 				
-				cm.close();
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
-			catch(NumberFormatException e)
-			{
-				depositError.setText("Please enter a number");
-				e.printStackTrace();
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
+					FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/MyAccountDetails.fxml"));
+					Stage accountDetails = loader.load();
+					MyAccountDetailsController detailsController = loader.getController();
+					detailsController.initData(user);
+					accountDetails.show();
+					
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
 			
 			
@@ -326,61 +328,5 @@ public class AccountScreenController
 		}
 		
 	}
-	
-	private class WithdrawButtonHandler implements EventHandler<ActionEvent>
-	{
-
-		@Override
-		public void handle(ActionEvent arg0)
-		{
-			double newBalance;
-			ConnectionManager cm;
-			try
-			{
-				cm = new ConnectionManager();
-				
-				
-				newBalance = Double.parseDouble(withdrawAmount.getText());
-				
-				if(newBalance <= 0)
-				{
-					withdrawError.setText("Please enter a value greather than 0");
-					throw new Exception();
-				}
-				
-				if(newBalance > cm.getUserBalance(username))
-				{
-					withdrawError.setText("Insufficient Funds");
-					throw new Exception("Insufficient Funds");
-				}
-				
-				newBalance = Math.floor(newBalance * 100) / 100;
-				
-				cm.withdrawAmount(newBalance, username);
-				
-				lblBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));
-
-				withdrawError.setText("");
-				cm.close();
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
-			catch(NumberFormatException e)
-			{
-				withdrawError.setText("Please enter a number");
-				e.printStackTrace();
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			
-		}
-		
-	}
-
-	
 	
 }

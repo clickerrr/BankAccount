@@ -22,7 +22,7 @@ public class ChangePasswordController
 	@FXML
 	private Label errorText;
 	
-	private String username;
+	private User user;
 	
 	@FXML
 	private void initialize() throws Exception
@@ -32,22 +32,27 @@ public class ChangePasswordController
 		
 	}
 
+	public void initData(User user)
+	{
+		this.user = user;
+
+	}
+	
 	private class ChangePasswordButtonHandler implements EventHandler<ActionEvent>
 	{
 
 		@Override
 		public void handle(ActionEvent arg0) 
 		{
-			ConnectionManager cm;
 			try
 			{
 				
 				if(newPassInput.getText().equals(rPassInput.getText()))
 				{
 					
-					cm = new ConnectionManager();
+					ConnectionManager cm = new ConnectionManager();
 					
-					cm.createNewPassword(username, newPassInput.getText());
+					cm.changePassword(user.getUsername(), newPassInput.getText());
 					cm.close();
 					errorText.setTextFill(Color.GREEN);
 					errorText.setText("Password Changed");
@@ -71,12 +76,6 @@ public class ChangePasswordController
 		
 		}
 		
-	}
-	
-	public void initData(String username)
-	{
-		this.username = username;
-
 	}
 
 }

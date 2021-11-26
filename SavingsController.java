@@ -3,7 +3,6 @@ package bankAccountStorage;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 
 import org.joda.time.Days;
 import org.joda.time.Hours;
@@ -60,7 +59,7 @@ public class SavingsController
 	
 	private NumberFormat format = NumberFormat.getCurrencyInstance();
 	
-	private String username;
+	private User user;
 	private double savingsBalance;
 	private String savingsPlan;
 	
@@ -81,24 +80,14 @@ public class SavingsController
 		actionHbox.getChildren().remove(errorText);
 	}
 	
-	public void initData(String username, Label superBalance)
+	public void initData(User user, Label superBalance)
 	{
-		this.username = username;
+		this.user = user;
 		this.superBalance = superBalance;
-		try
-		{
-			ConnectionManager cm = new ConnectionManager();
-			ArrayList<String> data = cm.getSavingData(this.username);
-			savingsBalance = Double.parseDouble(data.get(0));
-			savingsPlan = data.get(1);
-			savingBalance.setText("Current Savings Balance: " + format.format(savingsBalance));
-			savingPlan.setText("Current Savings Plan: " + savingsPlan);
-			
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+		savingsBalance = Double.parseDouble(user.getSavingsBalance());
+		savingsPlan = user.getSavingsPlan();
+		savingBalance.setText("Current Savings Balance: " + format.format(savingsBalance));
+		savingPlan.setText("Current Savings Plan: " + savingsPlan);
 		
 		calculateInterest();
 		
@@ -134,11 +123,15 @@ public class SavingsController
 					cm = new ConnectionManager();
 					
 					savingsBalance -= amount;
-					cm.depositAmount(amount, username);
+					cm.depositAmount(amount, user.getUsername());
+					user = cm.getUser(user.getUsername());
 					
-					cm.withdrawFromSavings(username, amount);
+					cm.withdrawFromSavings(user.getUsername(), amount);
+					user = cm.getUser(user.getUsername());
+					
 					savingBalance.setText("Current Savings Balance: " + format.format(savingsBalance));
-					superBalance.setText("Balance: " + format.format(cm.getUserBalance(username)));
+					superBalance.setText("Balance: " + format.format(user.getBalance()));
+					
 					cm.close();
 
 					actionHbox.getChildren().clear();
@@ -192,7 +185,8 @@ public class SavingsController
 					try
 					{
 						cm = new ConnectionManager();
-						cm.changeSavingsPlan(username, "A");
+						cm.changeSavingsPlan(user.getUsername(), "A");
+						user = cm.getUser(user.getUsername());
 						cm.close();
 						savingsPlan = "A";
 						savingPlan.setText("Current Savings Plan: " + savingsPlan);
@@ -218,7 +212,8 @@ public class SavingsController
 					try
 					{
 						cm = new ConnectionManager();
-						cm.changeSavingsPlan(username, "B");
+						cm.changeSavingsPlan(user.getUsername(), "B");
+						user = cm.getUser(user.getUsername());
 						cm.close();
 						savingsPlan = "B";
 						savingPlan.setText("Current Savings Plan: " + savingsPlan);
@@ -245,7 +240,8 @@ public class SavingsController
 					try
 					{
 						cm = new ConnectionManager();
-						cm.changeSavingsPlan(username, "C");
+						cm.changeSavingsPlan(user.getUsername(), "C");
+						user = cm.getUser(user.getUsername());
 						cm.close();
 						savingsPlan = "C";
 						savingPlan.setText("Current Savings Plan: " + savingsPlan);
@@ -277,7 +273,7 @@ public class SavingsController
 		{
 			ConnectionManager cm = new ConnectionManager();
 			
-			data = cm.getSavingsCreationTime(this.username);
+			data = cm.getSavingsCreationTime(user.getUsername());
 			
 		}
 		catch(Exception e)
@@ -331,8 +327,9 @@ public class SavingsController
 			try
 			{
 				ConnectionManager cm = new ConnectionManager();	
-				cm.updateSavingsBalance(this.username, newBalance);
-				cm.updateSavingsTimeIndexed(this.username);
+				cm.updateSavingsBalance(user.getUsername(), newBalance);
+				cm.updateSavingsTimeIndexed(user.getUsername());
+				user = cm.getUser(user.getUsername());
 				savingBalance.setText("Current Savings Balance: " + format.format(newBalance));
 				
 			}
@@ -341,16 +338,8 @@ public class SavingsController
 				e.printStackTrace();
 			}
 			
-			
-			
-			
-			
-			
-
 		}
-		
-		
-		
+			
 	}
 	
 	

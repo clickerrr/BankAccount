@@ -17,22 +17,21 @@ public class User
 		this.lastName = lastName;
 		this.username = username;
 		this.email = email;
-		this.balance = "$" + balance;
+		this.balance = balance;
+		this.savingsPlan = savingsPlan;
+		this.savingsBalance = savingsBalance;
+	}
+	
+	public void formatDataFields()
+	{
+		balance = "$" + balance;
 		if(savingsPlan == null)
 		{
-			this.savingsPlan = "None";
-		}
-		else
-		{
-			this.savingsPlan = savingsPlan;
+			savingsPlan = "None";
 		}
 		if(savingsBalance == null)
 		{
-			this.savingsBalance = "$0";
-		}
-		else
-		{
-			this.savingsBalance = "$" + savingsBalance;
+			savingsBalance = "$0";
 		}
 	}
 	
@@ -66,6 +65,6 @@ public class User
 	}
 	public String toString()
 	{
-		return "firstName: " + getFirstName() + "\nlastName: " + getLastName() + "\nemail: " + getEmail() + "\nbalance: " + getBalance() + "\nsavingsPlan: " + getSavingsPlan() + "\nsavingsBalance: " + getSavingsBalance();
+		return "firstName: " + getFirstName() + "\nlastName: " + getLastName() + "\nusername: " + getUsername() + "\nemail: " + getEmail() + "\nbalance: " + getBalance() + "\nsavingsPlan: " + getSavingsPlan() + "\nsavingsBalance: " + getSavingsBalance();
 	}
 }

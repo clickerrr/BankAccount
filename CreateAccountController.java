@@ -37,15 +37,8 @@ public class CreateAccountController
 	@FXML
 	public void initialize() throws Exception
 	{
-	
-
 		createAccountButton.setOnAction(new CreateAccountButtonHandler());
 		errorLabel.setText("");
-		
-		
-		
-		
-		
 	}
 
 	private class CreateAccountButtonHandler implements EventHandler<ActionEvent>

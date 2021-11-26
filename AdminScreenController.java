@@ -129,6 +129,7 @@ public class AdminScreenController
 		
 		for(int i = 0; i < allUsers.size(); i++)
 		{
+			allUsers.get(i).formatDataFields();
 			mainTable.getItems().add(allUsers.get(i));
 		}
 		
@@ -154,6 +155,7 @@ public class AdminScreenController
 						errorText.setText("");
 						for(int i = 0; i < allUsers.size(); i++)
 						{
+							allUsers.get(i).formatDataFields();
 							mainTable.getItems().add(allUsers.get(i));
 						}
 						
@@ -174,6 +176,7 @@ public class AdminScreenController
 						mainTable.getItems().clear();
 						for(int i = 0; i < users.size(); i++)
 						{
+							allUsers.get(i).formatDataFields();
 							mainTable.getItems().add(users.get(i));
 						}	
 					}
@@ -421,9 +424,7 @@ public class AdminScreenController
 	}
 	
 	private void deleteUser(int index)
-	{
-		
-		
+	{	
 		ConnectionManager cm = null;
 		try
 		{
@@ -491,13 +492,14 @@ public class AdminScreenController
 		
 		
 	}
+	
+	
 
 	public void refreshTable()
 	{
 		allUsers.clear();
 		int index = mainTable.getSelectionModel().getSelectedIndex();
-		
-		mainTable.getItems().clear();
+
 		ConnectionManager cm = null;
 		try
 		{
@@ -509,20 +511,46 @@ public class AdminScreenController
 			e.printStackTrace();
 		}
 		
-		for(int i = 0; i < allUsers.size(); i++)
-		{
-			mainTable.getItems().add(allUsers.get(i));
-		}
 		
-		if(index == mainTable.getItems().size())
+		mainTable.getItems().clear();
+		String lastName = lastNameSearch.getText();
+		if(lastName.isBlank())
 		{
-			mainTable.getSelectionModel().selectLast();
+			for(int i = 0; i < allUsers.size(); i++)
+			{
+				allUsers.get(i).formatDataFields();
+				mainTable.getItems().add(allUsers.get(i));
+			}
+			
+			if(index == mainTable.getItems().size())
+			{
+				mainTable.getSelectionModel().selectLast();
+			}
+			else
+			{
+				mainTable.getSelectionModel().select(index);
+			}
 		}
 		else
 		{
-			mainTable.getSelectionModel().select(index);
+			ArrayList<User> users = findUserByLastName(lastName);
+			if(users.isEmpty())
+			{
+				mainTable.getItems().clear();
+				errorText.setText("No Users Found");
+			}
+			else
+			{
+				errorText.setText("");
+				mainTable.getItems().clear();
+				for(int i = 0; i < users.size(); i++)
+				{
+					users.get(i).formatDataFields();
+					mainTable.getItems().add(users.get(i));
+				}	
+			}
+			
 		}
-
 		
 		System.out.println("Table refreshed!");
 	}

@@ -19,7 +19,7 @@ public class CreateSavingsButtonController extends AccountScreenController
 	
 	private BorderPane superPane;
 	
-	private String username;
+	private User user;
 	private Label superBalance;
 	
 	@FXML
@@ -29,9 +29,9 @@ public class CreateSavingsButtonController extends AccountScreenController
 		
 	}
 	
-	public void initData(String username, BorderPane superPane, Label superBalance)
+	public void initData(User user, BorderPane superPane, Label superBalance)
 	{
-		this.username = username;
+		this.user = user;
 		
 		this.superPane = superPane;
 		this.superBalance = superBalance;
@@ -50,7 +50,7 @@ public class CreateSavingsButtonController extends AccountScreenController
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/CreateSavingsForm.fxml"));
 				VBox createSavingsPane = loader.load();
 				CreateSavingsFormController savingsFormController = loader.getController();
-				savingsFormController.initData(username, superPane, superBalance);
+				savingsFormController.initData(user, superPane, superBalance);
 
 				superPane.setCenter(createSavingsPane);
 				

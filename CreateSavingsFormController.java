@@ -38,16 +38,13 @@ public class CreateSavingsFormController extends AccountScreenController
 	@FXML
 	private Label errorText;
 	
-	private String username;
+	private User user;
 	
 	private BorderPane superPane;
 	
 	private Label superBalance;
 	
-	public CreateSavingsFormController()
-	{
-		
-	}
+	
 	
 	@FXML
 	public void initialize() throws Exception
@@ -66,32 +63,22 @@ public class CreateSavingsFormController extends AccountScreenController
 		submitButton.setOnAction(new SubmitButtonHandler());
 	}
 	
-	public void initData(String username, BorderPane superPane, Label superBalance)
+	public void initData(User user, BorderPane superPane, Label superBalance)
 	{
-		this.username = username;
+		this.user = user;
 		this.superPane = superPane;
 		this.superBalance = superBalance;
 		parentVbox.getChildren().clear();
-		
-		try
+	
+		if(Double.parseDouble(user.getBalance()) > 0)
 		{
-			ConnectionManager cm = new ConnectionManager();
-			
-			if(cm.getUserBalance(username) > 0)
-			{
-				parentVbox.getChildren().addAll(planHbox, yesNoHbox, btnHbox, errorHbox);
-			}
-			else
-			{
-				parentVbox.getChildren().addAll(planHbox, btnHbox, errorHbox);	
-			}
-			cm.close();
-		
+			parentVbox.getChildren().addAll(planHbox, yesNoHbox, btnHbox, errorHbox);
 		}
-		catch(Exception e)
+		else
 		{
-			e.printStackTrace();
+			parentVbox.getChildren().addAll(planHbox, btnHbox, errorHbox);	
 		}
+	
 	}
 	
 	private class YesNoHandler implements EventHandler<ActionEvent>
@@ -132,30 +119,28 @@ public class CreateSavingsFormController extends AccountScreenController
 		
 			try
 			{
-				ConnectionManager cm = new ConnectionManager();
 				String savingPlan = choosePlanCb.getValue();
 				double balance = 0;
 				if(parentVbox.getChildren().contains(transferHbox))
 				{
 					balance = Double.parseDouble(amountTransferField.getText());
-					if(balance > cm.getUserBalance(username))
+					if(balance > Double.parseDouble(user.getBalance()))
 					{
 						errorText.setText("Insufficient Funds");
 						throw new Exception();
 					}
 				}
 				
-				cm.createSavings(username, savingPlan, balance);
-				
-				refreshSavings();
-				
+				ConnectionManager cm = new ConnectionManager();
+				cm.createSavings(user.getUsername(), savingPlan, balance);
+				user = cm.getUser(user.getUsername());				
 				cm.close();
+				refreshSavings();
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
 			}
-			
 			
 		}
 		
@@ -166,17 +151,14 @@ public class CreateSavingsFormController extends AccountScreenController
 		// manages the savings account tab
 		try
 		{
-			// another connection
-			ConnectionManager cm = new ConnectionManager();
-			
 			// if the user has a savings account
-			if(cm.hasSavings(username))
+			if(user.getSavingsPlan() != null)
 			{
 				// loads another fxml class which consists of a simple panel containing the savings account
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/Savings.fxml"));
 				VBox savingsData = loader.load();
 				SavingsController savingsController = loader.getController();
-				savingsController.initData(username, superBalance);
+				savingsController.initData(user, superBalance);
 				superPane.getChildren().clear();
 				superPane.setCenter(savingsData);
 			}	
