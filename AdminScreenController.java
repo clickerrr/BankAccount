@@ -144,12 +144,8 @@ public class AdminScreenController
 		{
 			if(e.getSource() == lastNameSearch)
 			{
-				System.out.println(e.getCode());
 				String lastName = lastNameSearch.getText();
 				lastName = lastName.trim();
-				System.out.println("Last Name " + lastName);	
-				System.out.println(lastName.isBlank());	
-				System.out.println(mainTable.getItems().isEmpty());	
 				if(lastName.isBlank())
 				{
 					mainTable.getItems().clear();
