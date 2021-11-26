@@ -33,6 +33,10 @@ public class User
 		{
 			savingsBalance = "$0";
 		}
+		else
+		{
+			savingsBalance = "$" + savingsBalance;
+		}
 	}
 	
 	public String getFirstName()

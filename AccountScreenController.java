@@ -107,7 +107,6 @@ public class AccountScreenController
 		// manages the savings account tab
 		try
 		{
-			System.out.println("SAVINGS PLAN: " + user.getSavingsPlan());
 			// if the user has a savings account
 			if(user.getSavingsPlan() != null)
 			{
@@ -164,9 +163,10 @@ public class AccountScreenController
 					
 					cm.depositAmount(amount, username);
 					user = cm.getUser(user.getUsername());
+					
 					cm.close();
 					
-					lblBalance.setText("Balance: " + format.format(user.getBalance()));
+					lblBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));
 
 					depositError.setText("");
 					
@@ -213,7 +213,7 @@ public class AccountScreenController
 					user = cm.getUser(user.getUsername());
 					cm.close();
 					
-					lblBalance.setText("Balance: " + format.format(user.getBalance()));
+					lblBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));
 
 					withdrawError.setText("");
 				}
@@ -235,8 +235,10 @@ public class AccountScreenController
 			{
 				try
 				{
+					
 					ConnectionManager cm = new ConnectionManager();
-					if(user.getSavingsPlan() != null)
+					user = cm.getUser(user.getUsername());
+					if(user.getSavingsPlan() == null)
 					{
 						transferError.setText("No account to transfer to");
 						throw new Exception("No Savings Account");
@@ -257,7 +259,7 @@ public class AccountScreenController
 					{
 						cm.transferAmount(username, newBalance);
 						user = cm.getUser(username);
-						lblBalance.setText("Balance: " + format.format(user.getBalance()));	
+						lblBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));	
 						transferError.setText("");
 						
 					}

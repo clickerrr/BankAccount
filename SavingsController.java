@@ -319,8 +319,19 @@ public class SavingsController
 			 * 4: Minutes
 			 * 5: Seconds
 			 */
-			
-			double newBalance = principal * Math.pow(Math.E, rate * timeDifference[2]);
+			double newBalance = 0;
+			if(user.getSavingsPlan().equals("A"))
+			{
+				newBalance = principal * Math.pow(Math.E, rate * timeDifference[3]);
+			}
+			else if(user.getSavingsPlan().equals("A"))
+			{
+				newBalance = principal * Math.pow(Math.E, rate * timeDifference[2]);
+			}
+			else if(user.getSavingsPlan().equals("C")) 
+			{
+				newBalance = principal * Math.pow(Math.E, rate * timeDifference[4]);
+			}
 			newBalance =  Math.floor(newBalance * 100) / 100;
 			// now we have to insert and update the new balance, and then update the time accessed
 

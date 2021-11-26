@@ -47,6 +47,8 @@ public class CreateSavingsButtonController extends AccountScreenController
 			superPane.getChildren().remove(parentVbox);
 			try
 			{
+				ConnectionManager cm = new ConnectionManager();
+				user = cm.getUser(user.getUsername());
 				FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/CreateSavingsForm.fxml"));
 				VBox createSavingsPane = loader.load();
 				CreateSavingsFormController savingsFormController = loader.getController();
