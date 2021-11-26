@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -72,6 +73,8 @@ public class AdminScreenController
 	private Label deleteModeError;
 	@FXML
 	private Label errorText;
+	@FXML
+	private TextField lastNameSearch;
 	
 	private double newBalance;
 	private boolean deleteMode;
@@ -88,6 +91,7 @@ public class AdminScreenController
 		deleteMode = false;
 		logoutButton.setOnAction(new LogoutButtonHandler());
 		refresh.setOnAction(new LogoutButtonHandler());
+		lastNameSearch.setOnKeyTyped(new SearchHandler());
 	    mainTable.getColumns().addListener(new ListChangeListener<Object>() {
 	          public boolean suspended;
 	          @Override
@@ -129,6 +133,61 @@ public class AdminScreenController
 		}
 		
 		mainTable.getSelectionModel().selectFirst();
+		
+	}
+	
+	private class SearchHandler implements EventHandler<KeyEvent>
+	{
+
+		@Override
+		public void handle(KeyEvent e)
+		{
+			if(e.getSource() == lastNameSearch)
+			{
+				System.out.println(e.getCode());
+				String lastName = lastNameSearch.getText();
+				lastName = lastName.trim();
+				System.out.println("Last Name " + lastName);	
+				System.out.println(lastName.isBlank());	
+				System.out.println(mainTable.getItems().isEmpty());	
+				if(lastName.isBlank())
+				{
+					mainTable.getItems().clear();
+					if( mainTable.getItems().isEmpty() )
+					{
+						errorText.setText("");
+						for(int i = 0; i < allUsers.size(); i++)
+						{
+							mainTable.getItems().add(allUsers.get(i));
+						}
+						
+						mainTable.getSelectionModel().selectFirst();	
+					}
+				}
+				else
+				{
+					ArrayList<User> users = findUserByLastName(lastName);
+					if(users.isEmpty())
+					{
+						mainTable.getItems().clear();
+						errorText.setText("No Users Found");
+					}
+					else
+					{
+						errorText.setText("");
+						mainTable.getItems().clear();
+						for(int i = 0; i < users.size(); i++)
+						{
+							mainTable.getItems().add(users.get(i));
+						}	
+					}
+					
+				}
+				
+			}
+			
+	
+		}
 		
 	}
 	
@@ -420,6 +479,20 @@ public class AdminScreenController
 		}
 		
 		return returnUser;
+		
+	}
+	
+	private ArrayList<User> findUserByLastName(String lastName)
+	{
+		ArrayList<User> returnUsers = new ArrayList<User>();
+		for(int i = 0; i < allUsers.size(); i++)
+		{
+			if(allUsers.get(i).getLastName().toLowerCase().equals(lastName.toLowerCase()))	
+				returnUsers.add(allUsers.get(i));
+		}
+		
+		return returnUsers;
+		
 		
 	}
 

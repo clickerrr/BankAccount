@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.joda.time.Days;
 import org.joda.time.Hours;
