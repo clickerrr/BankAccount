@@ -1,4 +1,4 @@
-# BankAccount
+# Bank Account (Java & mySQL)
 ## Java Application that uses a MySQL Database to simulate a real bank account with various features
 ### Features:
 - Interaction with a mySQL database so users can create persistent accounts with data
