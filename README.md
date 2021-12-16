@@ -6,3 +6,6 @@
 - Allows users to maintain their balance, using a deposit, withdraw, and transfer balance system
 - Allows users to create a savings account so they can transfer their balance, or accrue interest in real time 
 - Includes an admin screen that allows an admin to sort through users, and update their balances, and delete users
+### Uses:
+ - Joda Time Java library
+ - JavaFX Library
