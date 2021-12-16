@@ -111,7 +111,6 @@ public class LoginScreenController
 						User user = connection.getUser(usernameField.getText());
 						connection.close();
 						
-						System.out.println(user);
 						if(user != null)
 						{	
 							// launches the account stage 

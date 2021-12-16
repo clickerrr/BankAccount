@@ -191,8 +191,9 @@ public class AccountScreenController
 				ConnectionManager cm;
 				try
 				{
+
 					cm = new ConnectionManager();
-					
+					user = cm.getUser(username);
 					newBalance = Double.parseDouble(withdrawAmount.getText());
 					
 					if(newBalance <= 0)
@@ -311,11 +312,11 @@ public class AccountScreenController
 			{
 				try
 				{
-				
+					ConnectionManager cm = new ConnectionManager();
 					FXMLLoader loader = new FXMLLoader(getClass().getResource("/bankAccountStorage/MyAccountDetails.fxml"));
 					Stage accountDetails = loader.load();
 					MyAccountDetailsController detailsController = loader.getController();
-					detailsController.initData(user);
+					detailsController.initData(cm.getUser(username));
 					accountDetails.show();
 					
 				}

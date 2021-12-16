@@ -3,6 +3,7 @@ package bankAccountStorage;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
+import java.util.Arrays;
 
 import org.joda.time.Days;
 import org.joda.time.Hours;
@@ -90,7 +91,6 @@ public class SavingsController
 		savingPlan.setText("Current Savings Plan: " + savingsPlan);
 		
 		calculateInterest();
-		
 	}
 	
 	private class EnterKeyHandler implements EventHandler<KeyEvent>
@@ -130,7 +130,7 @@ public class SavingsController
 					user = cm.getUser(user.getUsername());
 					
 					savingBalance.setText("Current Savings Balance: " + format.format(savingsBalance));
-					superBalance.setText("Balance: " + format.format(user.getBalance()));
+					superBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));
 					
 					cm.close();
 
@@ -319,12 +319,13 @@ public class SavingsController
 			 * 4: Minutes
 			 * 5: Seconds
 			 */
+
 			double newBalance = 0;
 			if(user.getSavingsPlan().equals("A"))
 			{
 				newBalance = principal * Math.pow(Math.E, rate * timeDifference[3]);
 			}
-			else if(user.getSavingsPlan().equals("A"))
+			else if(user.getSavingsPlan().equals("B"))
 			{
 				newBalance = principal * Math.pow(Math.E, rate * timeDifference[2]);
 			}
@@ -335,18 +336,21 @@ public class SavingsController
 			newBalance =  Math.floor(newBalance * 100) / 100;
 			// now we have to insert and update the new balance, and then update the time accessed
 
-			try
+			if(newBalance != principal)
 			{
-				ConnectionManager cm = new ConnectionManager();	
-				cm.updateSavingsBalance(user.getUsername(), newBalance);
-				cm.updateSavingsTimeIndexed(user.getUsername());
-				user = cm.getUser(user.getUsername());
-				savingBalance.setText("Current Savings Balance: " + format.format(newBalance));
-				
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
+				try
+				{
+					ConnectionManager cm = new ConnectionManager();	
+					cm.updateSavingsBalance(user.getUsername(), newBalance);
+					cm.updateSavingsTimeIndexed(user.getUsername());
+					user = cm.getUser(user.getUsername());
+					savingBalance.setText("Current Savings Balance: " + format.format(newBalance));
+					
+				}
+				catch(SQLException e)
+				{
+					e.printStackTrace();
+				}	
 			}
 			
 		}

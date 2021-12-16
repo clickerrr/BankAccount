@@ -61,6 +61,7 @@ public class ConnectionManager
 		return areEqual;
 	}
 
+	// GOOD AND CHECKED WORKS
 	public User getUser(String username) throws SQLException
 	{
 		String query = "select * from accounts.account_information where username=?";
@@ -151,11 +152,27 @@ public class ConnectionManager
 		
 	}
 	
-	public void updateSavingsBalance(String username, double newBalance) throws SQLException
+	public void updateSavingsBalance(String username, double amount) throws SQLException
 	{
-		String query = "update accounts.account_information set savingBalance=? where username=?";
+		String query = "select savingbalance from accounts.account_information where username=?";
 		
 		PreparedStatement preparedStatement = connect.prepareStatement(query);
+		
+		preparedStatement.setString(1, username);
+		ResultSet rs = preparedStatement.executeQuery();
+		
+		double newBalance = 0;
+		
+		while(rs.next())
+		{
+			newBalance = rs.getDouble("savingBalance");
+		}
+		
+		newBalance += amount;
+		
+		query = "update accounts.account_information set savingBalance=? where username=?";
+		
+		preparedStatement = connect.prepareStatement(query);
 		
 		preparedStatement.setDouble(1, newBalance);
 		preparedStatement.setString(2, username);

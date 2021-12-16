@@ -35,7 +35,6 @@ public class ChangePasswordController
 	public void initData(User user)
 	{
 		this.user = user;
-
 	}
 	
 	private class ChangePasswordButtonHandler implements EventHandler<ActionEvent>
