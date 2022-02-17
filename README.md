@@ -9,3 +9,4 @@
 ### Uses:
  - Joda Time Java library
  - JavaFX Library
+ - JDBC Connector w/ a mySQL database
