@@ -1,5 +1,7 @@
 package bankAccountStorage;
 
+import java.text.NumberFormat;
+
 public class User 
 {
 
@@ -10,6 +12,9 @@ public class User
 	private String balance;
 	private String savingsPlan;
 	private String savingsBalance;
+	
+	private NumberFormat format = NumberFormat.getCurrencyInstance();
+	
 	
 	public User(String firstName, String lastName, String username, String email, String balance, String savingsPlan, String savingsBalance)
 	{
@@ -24,7 +29,7 @@ public class User
 	
 	public void formatDataFields()
 	{
-		balance = "$" + balance;
+		balance = format.format(Double.parseDouble(balance));
 		if(savingsPlan == null)
 		{
 			savingsPlan = "None";
@@ -35,7 +40,7 @@ public class User
 		}
 		else
 		{
-			savingsBalance = "$" + savingsBalance;
+			savingsBalance = format.format(Double.parseDouble(savingsBalance));
 		}
 	}
 	

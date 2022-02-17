@@ -76,7 +76,6 @@ public class AdminScreenController
 	@FXML
 	private TextField lastNameSearch;
 	
-	private double newBalance;
 	private boolean deleteMode;
 	
 	@FXML
@@ -147,45 +146,34 @@ public class AdminScreenController
 			{
 				String lastName = lastNameSearch.getText();
 				lastName = lastName.trim();
+				ArrayList<User> foundUsers = new ArrayList<User>();
+			
 				if(lastName.isBlank())
-				{
+				{	
+					errorText.setText("");
 					mainTable.getItems().clear();
-					if( mainTable.getItems().isEmpty() )
+					for(int i = 0; i < allUsers.size(); i++)
 					{
-						errorText.setText("");
-						for(int i = 0; i < allUsers.size(); i++)
-						{
-							allUsers.get(i).formatDataFields();
-							mainTable.getItems().add(allUsers.get(i));
-						}
-						
-						mainTable.getSelectionModel().selectFirst();	
+						mainTable.getItems().add(allUsers.get(i));
 					}
 				}
 				else
 				{
-					ArrayList<User> users = findUserByLastName(lastName);
-					if(users.isEmpty())
-					{
-						mainTable.getItems().clear();
-						errorText.setText("No Users Found");
-					}
-					else
+					mainTable.getItems().clear();
+					errorText.setText("User not found");
+					foundUsers = findUserByLastName(lastName);
+					if(!foundUsers.isEmpty())
 					{
 						errorText.setText("");
-						mainTable.getItems().clear();
-						for(int i = 0; i < users.size(); i++)
+						for(int i = 0; i < foundUsers.size(); i++)
 						{
-							allUsers.get(i).formatDataFields();
-							mainTable.getItems().add(users.get(i));
-						}	
+							mainTable.getItems().add(foundUsers.get(i));
+						}
 					}
-					
 				}
 				
 			}
 			
-	
 		}
 		
 	}
@@ -505,20 +493,29 @@ public class AdminScreenController
 		{
 			cm = new ConnectionManager();
 			allUsers = cm.adminGetAllUserData();
+			for(int i = 0; i < allUsers.size(); i++)
+			{
+				allUsers.get(i).formatDataFields();
+			}
 		}
 		catch(SQLException e)
 		{
 			e.printStackTrace();
 		}
 		
-		
-		mainTable.getItems().clear();
+		// is it currently being searched?
+		// if yes, then get the last name, that is being searched, and only populate table with the last name that wants to be searched
+		// or if you can not get the last name, get the elements that are currently in the table and repopulate with only them
+		// we have to make sure to format all the data fields though, so we do the thing in the search handler so its the same
 		String lastName = lastNameSearch.getText();
+		ArrayList<User> foundUsers = findUserByLastName(lastName);
+		
 		if(lastName.isBlank())
-		{
+		{	
+			errorText.setText("");
+			mainTable.getItems().clear();
 			for(int i = 0; i < allUsers.size(); i++)
 			{
-				allUsers.get(i).formatDataFields();
 				mainTable.getItems().add(allUsers.get(i));
 			}
 			
@@ -533,25 +530,29 @@ public class AdminScreenController
 		}
 		else
 		{
-			ArrayList<User> users = findUserByLastName(lastName);
-			if(users.isEmpty())
-			{
-				mainTable.getItems().clear();
-				errorText.setText("No Users Found");
-			}
-			else
+			mainTable.getItems().clear();
+			errorText.setText("User not found");
+			foundUsers = findUserByLastName(lastName);
+			if(!foundUsers.isEmpty())
 			{
 				errorText.setText("");
-				mainTable.getItems().clear();
-				for(int i = 0; i < users.size(); i++)
+				for(int i = 0; i < foundUsers.size(); i++)
 				{
-					users.get(i).formatDataFields();
-					mainTable.getItems().add(users.get(i));
-				}	
+					mainTable.getItems().add(foundUsers.get(i));
+				}
+				
+				if(index == mainTable.getItems().size())
+				{
+					mainTable.getSelectionModel().selectLast();
+				}
+				else
+				{
+					mainTable.getSelectionModel().select(index);
+				}
 			}
-			
-		}
 		
+		}
+
 		System.out.println("Table refreshed!");
 	}
 	

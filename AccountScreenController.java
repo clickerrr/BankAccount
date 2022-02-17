@@ -163,10 +163,11 @@ public class AccountScreenController
 					
 					cm.depositAmount(amount, username);
 					user = cm.getUser(user.getUsername());
+					balance = Double.parseDouble(user.getBalance());
 					
 					cm.close();
 					
-					lblBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));
+					lblBalance.setText("Balance: " + format.format(balance));
 
 					depositError.setText("");
 					
@@ -212,9 +213,10 @@ public class AccountScreenController
 					
 					cm.withdrawAmount(newBalance, username);
 					user = cm.getUser(user.getUsername());
+					balance = Double.parseDouble(user.getBalance());
 					cm.close();
 					
-					lblBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));
+					lblBalance.setText("Balance: " + format.format(balance));
 
 					withdrawError.setText("");
 				}
@@ -239,34 +241,38 @@ public class AccountScreenController
 					
 					ConnectionManager cm = new ConnectionManager();
 					user = cm.getUser(user.getUsername());
+					
+					double amount = Double.parseDouble(transferAmount.getText());
+					
+					if(amount <= 0)
+					{
+						transferError.setText("Please enter a value greather than 0");
+						throw new Exception();
+					}
+					
+					amount = Math.floor(amount * 100) / 100;
+
 					if(user.getSavingsPlan() == null)
 					{
 						transferError.setText("No account to transfer to");
 						throw new Exception("No Savings Account");
 					}
-					
-					double newBalance = Double.parseDouble(transferAmount.getText());
-					
-					if(newBalance <= 0)
-					{
-						transferError.setText("Please enter a value greather than 0");
-						throw new Exception();
-					}
 
 					
-					newBalance = Math.floor(newBalance * 100) / 100;
-
-					if(newBalance <= balance)
+					if(amount <= balance)
 					{
-						cm.transferAmount(username, newBalance);
+						cm.transferAmount(username, amount);
 						user = cm.getUser(username);
-						lblBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));	
+						balance = Double.parseDouble(user.getBalance());
+						lblBalance.setText("Balance: " + format.format(balance));	
 						transferError.setText("");
+						cm.updateSavingsTimeIndexed(username);
 						
 					}
 					else
 					{
 						transferError.setText("Insufficient Funds");
+						throw new Exception("Insufficient Funds");
 					}
 					
 					

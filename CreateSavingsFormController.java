@@ -1,5 +1,7 @@
 package bankAccountStorage;
 
+import java.text.NumberFormat;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -44,7 +46,8 @@ public class CreateSavingsFormController extends AccountScreenController
 	
 	private Label superBalance;
 	
-	
+	// format for currency
+	private NumberFormat format = NumberFormat.getCurrencyInstance();
 	
 	@FXML
 	public void initialize() throws Exception
@@ -133,7 +136,8 @@ public class CreateSavingsFormController extends AccountScreenController
 				
 				ConnectionManager cm = new ConnectionManager();
 				cm.createSavings(user.getUsername(), savingPlan, balance);
-				user = cm.getUser(user.getUsername());				
+				user = cm.getUser(user.getUsername());		
+				superBalance.setText("Balance: " + format.format(Double.parseDouble(user.getBalance())));		
 				cm.close();
 				refreshSavings();
 			}
